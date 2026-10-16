@@ -1,0 +1,23 @@
+MONKEY MART FIREBASE CLOUD SAVING
+
+The build now syncs the Defold persistent save files to Cloud Firestore and restores the cloud copy before the game starts.
+
+ONE-TIME FIREBASE CONSOLE SETUP (project monkeemart-5299f):
+1. Open Firebase Console > Authentication > Sign-in method and enable Anonymous.
+2. Open Firestore Database and create a database.
+3. In Firestore Rules, publish these rules for the anonymous per-browser account:
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /monkeyMartSaves/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+
+SECURITY / LIMITATIONS:
+- This uses anonymous Firebase Auth, so saves restore on the same browser profile. Clearing browser data or using another device/browser creates a different anonymous UID; for cross-device saves, add a real sign-in provider and link the anonymous account.
+- Firestore must be enabled and the rules published or cloud saves will fail. Check the browser console for Firebase errors.
+- Cloud payloads over roughly 700 KB are skipped to stay below Firestore document limits.
+- The Firebase web config/API key is intended to be public; security comes from Authentication and Firestore Rules, not hiding the key.
